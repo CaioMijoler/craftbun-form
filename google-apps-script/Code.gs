@@ -21,6 +21,8 @@
  * implantações > ícone de lápis > Versão: Nova versão > Implantar.
  */
 
+const SCRIPT_VERSION = "v8-whatsapp-richtext";
+
 const SHEET_NAME = "Leads";
 
 const COLUMNS = [
@@ -97,6 +99,7 @@ function configurarPlanilha_(sheet) {
   sheet.autoResizeColumns(1, numCols);
 
   aplicarValidacaoVendedor_(sheet, lastRow);
+  aplicarLinksWhatsApp_(sheet, lastRow);
   aplicarFiltro_(sheet, lastRow);
 }
 
@@ -111,6 +114,46 @@ function aplicarValidacaoVendedor_(sheet, lastRow) {
     .build();
 
   sheet.getRange(2, col, lastRow - 1, 1).setDataValidation(rule);
+}
+
+/**
+ * Transforma a coluna "WhatsApp" em links clicáveis para o wa.me, mantendo o
+ * número como texto visível na célula. Usa link de texto rico (em vez de uma
+ * fórmula HYPERLINK) para não depender do separador de argumentos do locale
+ * da planilha (vírgula vs. ponto e vírgula).
+ */
+function aplicarLinksWhatsApp_(sheet, lastRow) {
+  if (lastRow < 2) return;
+
+  const col = COLUMNS.indexOf("WhatsApp") + 1;
+  const range = sheet.getRange(2, col, lastRow - 1, 1);
+  const valores = range.getValues();
+
+  const richValues = valores.map((linha) => {
+    const numero = linha[0];
+    const texto = numero ? String(numero) : "";
+    const builder = SpreadsheetApp.newRichTextValue().setText(texto);
+
+    const link = montarLinkWhatsApp_(numero);
+    if (link && texto) {
+      builder.setLinkUrl(link);
+    }
+
+    return [builder.build()];
+  });
+
+  range.setRichTextValues(richValues);
+}
+
+/** Monta a URL do wa.me a partir do número de WhatsApp. */
+function montarLinkWhatsApp_(numero) {
+  if (!numero) return "";
+
+  const digitos = String(numero).replace(/\D/g, "");
+  if (!digitos) return "";
+
+  const comDDI = digitos.length >= 12 && digitos.startsWith("55") ? digitos : "55" + digitos;
+  return "https://wa.me/" + comDDI;
 }
 
 /** Cria (ou recria) o filtro no cabeçalho para permitir filtrar por qualquer coluna. */
@@ -195,7 +238,11 @@ function doPost(e) {
 }
 
 function doGet() {
-  return jsonResponse_({ result: "ok", message: "Craft Bun lead webhook está no ar." });
+  return jsonResponse_({
+    result: "ok",
+    message: "Craft Bun lead webhook está no ar.",
+    version: SCRIPT_VERSION,
+  });
 }
 
 function jsonResponse_(payload) {

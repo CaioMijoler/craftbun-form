@@ -55,3 +55,20 @@ html {
 .animate-float-slow {
   animation: float-slow 6s ease-in-out infinite;
 }
+
+@keyframes orbit {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg) translateX(var(--orbit-radius, 200px)) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg) translateX(var(--orbit-radius, 200px)) rotate(-360deg);
+  }
+}
+
+.animate-orbit {
+  animation: orbit var(--orbit-duration, 36s) linear infinite;
+}
+
+.animate-orbit:hover {
+  animation-play-state: paused;
+}

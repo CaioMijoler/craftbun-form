@@ -49,7 +49,7 @@ export default function Hero() {
               Quero virar parceiro
             </button>
             <a
-              href="#diferenciais"
+              href="#linhas-pao"
               className="rounded-full border border-craft-cream/30 px-7 py-3.5 text-base font-semibold text-craft-cream transition hover:border-craft-orange hover:text-craft-orange"
             >
               Ver linhas de pão
